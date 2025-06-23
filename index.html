@@ -1,0 +1,512 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>脐橙链 - 区块链溯源</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #ff8a00 0%, #ffa726 50%, #ffcc80 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        /* 页面切换 */
+        .page {
+            display: none;
+            min-height: 100vh;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* 头部导航 */
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            padding: 20px 20px 15px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 24px;
+            font-weight: 700;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: none;
+            font-size: 14px;
+            backdrop-filter: blur(10px);
+        }
+
+        .back-btn.show {
+            display: block;
+        }
+
+        /* 产品列表页 */
+        .search-bar {
+            margin: 20px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(45deg, #ff6b35, #ff8a00);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+
+        .product-grid {
+            padding: 0 20px 20px;
+        }
+
+        .product-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .orange-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(45deg, #ff8a00, #ffa726);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 24px;
+        }
+
+        .product-info h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .product-info p {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .blockchain-status {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #ecf0f1;
+        }
+
+        .status-badge {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .view-details {
+            color: #ff6b35;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* 详情页 */
+        .detail-content {
+            padding: 20px;
+        }
+
+        .product-hero {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(45deg, #ff8a00, #ffa726);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 40px;
+            box-shadow: 0 8px 25px rgba(255, 138, 0, 0.3);
+        }
+
+        .hero-title {
+            color: #2c3e50;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .hero-subtitle {
+            color: #7f8c8d;
+            font-size: 16px;
+        }
+
+        .info-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(45deg, #ff6b35, #ff8a00);
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+
+        .info-value {
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .blockchain-hash {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            color: #495057;
+            word-break: break-all;
+        }
+
+
+
+        /* 响应式 */
+        @media (max-width: 375px) {
+            .header {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+            
+            .product-card {
+                padding: 15px;
+            }
+            
+            .detail-content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 产品列表页 -->
+    <div id="listPage" class="page active">
+        <div class="header">
+            <h1>🍊 脐橙链</h1>
+        </div>
+        
+        <div class="search-bar">
+            <input type="text" class="search-input" placeholder="输入批次号或二维码搜索">
+            <button class="search-btn">🔍</button>
+        </div>
+        
+        <div class="product-grid">
+            <div class="product-card" onclick="showDetail('product1')">
+                <div class="product-header">
+                    <div class="orange-icon">🍊</div>
+                    <div class="product-info">
+                        <h3>赣南脐橙 精品装</h3>
+                        <p>批次号: NV2024001</p>
+                    </div>
+                </div>
+                <div class="blockchain-status">
+                    <span class="status-badge">✓ 已上链</span>
+                    <span class="view-details">查看详情 →</span>
+                </div>
+            </div>
+            
+            <div class="product-card" onclick="showDetail('product2')">
+                <div class="product-header">
+                    <div class="orange-icon">🍊</div>
+                    <div class="product-info">
+                        <h3>有机脐橙 礼盒装</h3>
+                        <p>批次号: NV2024002</p>
+                    </div>
+                </div>
+                <div class="blockchain-status">
+                    <span class="status-badge">✓ 已上链</span>
+                    <span class="view-details">查看详情 →</span>
+                </div>
+            </div>
+            
+            <div class="product-card" onclick="showDetail('product3')">
+                <div class="product-header">
+                    <div class="orange-icon">🍊</div>
+                    <div class="product-info">
+                        <h3>特级脐橙 家庭装</h3>
+                        <p>批次号: NV2024003</p>
+                    </div>
+                </div>
+                <div class="blockchain-status">
+                    <span class="status-badge">✓ 已上链</span>
+                    <span class="view-details">查看详情 →</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 产品详情页 -->
+    <div id="detailPage" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="showList()">← 返回</button>
+            <h1>产品溯源</h1>
+        </div>
+        
+        <div class="detail-content">
+            <div class="product-hero">
+                <div class="hero-icon">🍊</div>
+                <h2 class="hero-title" id="productTitle">赣南脐橙 精品装</h2>
+                <p class="hero-subtitle" id="productBatch">批次号: NV2024001</p>
+            </div>
+            
+            <div class="info-section">
+                <h3 class="section-title">
+                    <span class="section-icon">🌱</span>
+                    基本信息
+                </h3>
+                <div class="info-item">
+                    <span class="info-label">产品名称</span>
+                    <span class="info-value" id="detailName">赣南脐橙 精品装</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">产地</span>
+                    <span class="info-value">江西省赣州市信丰县</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">种植户</span>
+                    <span class="info-value">李明果园合作社</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">采摘时间</span>
+                    <span class="info-value">2024年11月15日</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">包装时间</span>
+                    <span class="info-value">2024年11月18日</span>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3 class="section-title">
+                    <span class="section-icon">🔗</span>
+                    区块链信息
+                </h3>
+                <div class="info-item">
+                    <span class="info-label">上链时间</span>
+                    <span class="info-value">2024年11月19日 10:30</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">区块高度</span>
+                    <span class="info-value">#2,847,391</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">交易哈希</span>
+                    <span class="info-value">0x8f2a...b9c4</span>
+                </div>
+                <div class="blockchain-hash">
+                    0x8f2a9c847eb3d5f2b1a6c9e4d8f7a2b5c8e1f4a7b9c4d6e8f1a3b5c7e9f2a4b6c8
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <h3 class="section-title">
+                    <span class="section-icon">📋</span>
+                    质检报告
+                </h3>
+                <div class="info-item">
+                    <span class="info-label">糖度</span>
+                    <span class="info-value">12.5°Brix</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">酸度</span>
+                    <span class="info-value">0.8%</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">农残检测</span>
+                    <span class="info-value">合格 ✓</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">重金属检测</span>
+                    <span class="info-value">合格 ✓</span>
+                </div>
+            </div>
+            
+
+        </div>
+    </div>
+
+    <script>
+        const products = {
+            product1: {
+                title: "赣南脐橙 精品装",
+                batch: "NV2024001",
+                name: "赣南脐橙 精品装"
+            },
+            product2: {
+                title: "有机脐橙 礼盒装",
+                batch: "NV2024002",
+                name: "有机脐橙 礼盒装"
+            },
+            product3: {
+                title: "特级脐橙 家庭装",
+                batch: "NV2024003",
+                name: "特级脐橙 家庭装"
+            }
+        };
+
+        function showDetail(productId) {
+            const product = products[productId];
+            document.getElementById('productTitle').textContent = product.title;
+            document.getElementById('productBatch').textContent = `批次号: ${product.batch}`;
+            document.getElementById('detailName').textContent = product.name;
+            
+            document.getElementById('listPage').classList.remove('active');
+            document.getElementById('detailPage').classList.add('active');
+            document.querySelector('.back-btn').classList.add('show');
+        }
+
+        function showList() {
+            document.getElementById('detailPage').classList.remove('active');
+            document.getElementById('listPage').classList.add('active');
+            document.querySelector('.back-btn').classList.remove('show');
+        }
+
+
+
+        // 搜索功能
+        document.querySelector('.search-btn').addEventListener('click', function() {
+            const searchTerm = document.querySelector('.search-input').value;
+            if (searchTerm) {
+                alert(`🔍 搜索批次号: ${searchTerm}\n\n正在区块链网络中查询...`);
+            }
+        });
+
+        document.querySelector('.search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.querySelector('.search-btn').click();
+            }
+        });
+    </script>
+</body>
+</html>
